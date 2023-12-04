@@ -13,13 +13,11 @@ redisClient.on("error", (err) => console.log("Redis Client Error", err));
 
 // Your rate-limiting function
 async function checkRateLimit(ip) {
-  const windowMs = 60 * 100; // 1 minute window
-  const maxRequests = 4; // Maximum requests per window
-  await redisClient.hSet(`user-session:123`, {
-    count: 1,
-    timestamp: Date.now(),
-  });
-
+  console.log(ip, "ip");
+  const windowMs = 1000; // 1 second window
+  const maxRequests = 10; // Maximum requests per window
+  
+  // ipRateLimits
   let userSession = await redisClient.hGetAll(`user-session:123${ip}`);
   console.log(userSession, "having this");
   // console.log(JSON.stringify(userSession, null, 2));
@@ -27,7 +25,10 @@ async function checkRateLimit(ip) {
   // Check if IP is in the tracking object
   if (Object.keys(userSession).length == 0) {
     // If not, initialize the count
-
+    await redisClient.hSet(`user-session:123${ip}`, {
+      count: 1,
+      timestamp: Date.now(),
+    });
     return true; // Allow the first request
   } else {
     // If IP is in the tracking object, check the count and timestamp
@@ -103,3 +104,5 @@ process.on("SIGINT", () => {
   console.log("Server is shutting down");
   process.exit();
 });
+
+console.log("new hits ios new ");
